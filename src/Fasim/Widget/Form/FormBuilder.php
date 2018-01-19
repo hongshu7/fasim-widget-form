@@ -2,7 +2,7 @@
 namespace Fasim\Widget\Form;
 
 use Fasim\Facades\Config;
-use Fasim\Facades\Request;
+use Fasim\Facades\Input;
 
 class FormBuilder {
 	
@@ -12,9 +12,29 @@ class FormBuilder {
 	private $data = [];
 
 	private $hasError = false;
+
+	private $baseUrl = '';
+	private $imageUrl = '';
+
+	private static $instance = null;
 	
 	public function __construct() {
-		
+		$this->baseUrl = Config::baseUrl();
+		$this->imageUrl = Config::get('url.cdn');
+
+		if (self::$instance == null) {
+			self::$instance = $this;
+		}
+	}
+
+	public function setBaseUrl($url) {
+		$this->baseUrl = $url;
+		return $this;
+	}
+
+	public function setImageUrl($url) {
+		$this->imageUrl = $url;
+		return $this;
 	}
 
 	public function data($key = null, $value = null) {
@@ -36,7 +56,7 @@ class FormBuilder {
 	}
 
 	public function action($url) {
-		$this->action = Form::getUrl($url);
+		$this->action = FormBuilder::getUrl($url);
 		return $this;
 	}
 
@@ -148,7 +168,7 @@ class FormBuilder {
 			}
 		}
 		if (!$hasReferer) {
-			$referer = Request::referer();
+			$referer = Input::referer();
 			$html .= "<input type=\"hidden\" name=\"referer\" value=\"{$referer}\" /> \n";
 		}
 
@@ -173,12 +193,24 @@ class FormBuilder {
 	}
 
 	public static function getUrl($url) {
-		if (strlen($url) < 4 || substr($url, 0, 4) != 'http') {
-			$adminUrl = Config::baseUrl();
+		if ($url{0} != '#' && (strlen($url) < 4 || substr($url, 0, 4) != 'http')) {
 			if ($url{0} == '/') {
 				$url = substr($url, 0, 1);
 			}
-			$url = $adminUrl.$url;
+			$url = self::$instance->baseUrl.$url;
+		}
+		return $url;
+	}
+
+	public static function getImageUrl($url, $format='') {
+		if (strlen($url) < 4 || substr($url, 0, 4) != 'http') {
+			if ($url{0} == '/') {
+				$url = substr($url, 0, 1);
+			}
+			$url = self::$instance->imageUrl.$url;
+		}
+		if ($format != '') {
+			$url .= '-'.$format.'.jpg';
 		}
 		return $url;
 	}

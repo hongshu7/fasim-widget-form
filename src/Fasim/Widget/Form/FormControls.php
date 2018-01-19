@@ -41,7 +41,7 @@ abstract class FormValue implements FormControl {
 	public $rules = [];
 	
 	public $min = 0;
-	public $max = 10000;
+	public $max = 0;
 
 	public $errorWord = '';
 	public $errorType = '';
@@ -151,7 +151,7 @@ abstract class FormValue implements FormControl {
 			$this->errorType = 'min';
 			return false;
 		}
-		if (strlen($value.'') > $this->max) {
+		if ($this->max > 0 && strlen($value.'') > $this->max) {
 			$this->errorType = 'max';
 			return false;
 		}
@@ -218,7 +218,7 @@ class FormButton implements FormControl {
 		if ($this->primary) {
 			return "<button class=\"btn btn-primary\"><i class=\"fa fa-save\"></i> {$this->name}</button> \n";
 		} else if ($this->url != '') {
-			$url = Form::getUrl($this->url);
+			$url = FormBuilder::getUrl($this->url);
 			return "<a href=\"{$url}\" class=\"btn\">{$this->name}</a> \n";
 		}
 	}
@@ -648,17 +648,7 @@ class FormSelect extends FormValueStyle {
 	public function options($options) {
 		if (is_array($options)) {
 			foreach ($options as $ok => $ov) {
-				if (is_string($ok)) {
-					$this->options[] = [
-						'name' => $ok,
-						'value' => $ov
-					];
-				} else if (is_string($ov)) {
-					$this->options[] = [
-						'name' => $ov,
-						'value' => $ov
-					];
-				} else if (is_array($ov) && isset($ov['value'])) {
+				if (is_array($ov) && isset($ov['value'])) {
 					//fixed
 					if (isset($ov['key'])) {
 						$ov['name'] = $ov['key'];
@@ -669,8 +659,11 @@ class FormSelect extends FormValueStyle {
 							'value' => $ov['value']
 						];
 					}
-				} else {
-					continue;
+				} else if (is_string($ov)) {
+					$this->options[] = [
+						'name' => $ov,
+						'value' => $ok.''
+					];
 				}
 			}
 		}

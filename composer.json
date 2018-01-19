@@ -2,7 +2,7 @@
     "name": "lhs168/fasim-widget-form",
     "description": "a form widget for fasim",
     "type": "library",
-    "license": "GPL",
+    "license": "GPL 3.0",
     "authors": [
         {
             "name": "Kevin Lai",
