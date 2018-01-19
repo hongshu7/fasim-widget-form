@@ -219,7 +219,7 @@ class FormButton implements FormControl {
 			return "<button class=\"btn btn-primary\"><i class=\"fa fa-save\"></i> {$this->name}</button> \n";
 		} else if ($this->url != '') {
 			$url = FormBuilder::getUrl($this->url);
-			return "<a href=\"{$url}\" class=\"btn\">{$this->name}</a> \n";
+			return "<a href=\"{$url}\" class=\"btn btn-default\">{$this->name}</a> \n";
 		}
 	}
 
@@ -235,6 +235,7 @@ class FormHidden extends FormValue {
 
 class FormGroup extends FormValue {
 	
+	public $groupClasses = [ 'form-group' ];
 	public $remark = '';
 	
 	public function remark($remark) {
@@ -242,20 +243,32 @@ class FormGroup extends FormValue {
 		return $this;
 	}
 
+	public function groupClass($groupClass) {
+		$this->groupClasses[] = $groupClass;
+		return $this;
+
+	}
+
+
 	public function render() {
 		$error = $this->getError();
-		$errorClass = $error == '' ? '' : ' error';
-		$html =  "<div class=\"control-group{$errorClass}\"> \n";
+		if ($error != '') {
+			$this->groupClasses[] = 'has-error';
+		}
+		$addClass = $error == '' ? '' : ' error';
+		if ($this->groupClass != '') {
+			$addClass .= ' ' . $this->groupClass;
+		}
+		$groupClass = implode(' ', $this->groupClasses);
+		$html =  "<div class=\"{$groupClass}\"> \n";
 		$html .=  "<label class=\"control-label\" for=\"i_{$this->key}\">{$this->label}</label> \n";
-		$html .=  "<div class=\"controls\"> \n";
 		$html .=  $this->renderInput();
 		if ($error != '') {
-			$html .=  "<span class=\"help-inline\">{$error}</span> \n";
+			$html .=  "<div class=\"help-block\">{$error}</div> \n";
 		}
 		if ($this->remark) {
-			$html .=  "<span class=\"tip\">{$this->remark}</span> \n";
+			$html .=  "<div class=\"help-block\">{$this->remark}</div> \n";
 		}
-		$html .=  "</div> \n";
 		$html .=  "</div> \n";
 		return $html;
 	}
@@ -268,6 +281,8 @@ class FormGroup extends FormValue {
 class FormImages extends FormGroup {
 	public $maxCount = 6;
 	public $allowFiles = 'jpg,jpeg,gif,png';
+	public $width = 80;
+	public $height = 80;
 
 	public function maxCount($maxCount) {
 		$this->maxCount = $maxCount;
@@ -275,6 +290,16 @@ class FormImages extends FormGroup {
 
 	public function allowFiles($allowFiles) {
 		$this->allowFiles = $allowFiles;
+	}
+
+	public function width($width) {
+		$this->width = $width;
+		return $this;
+	}
+
+	public function height($height) {
+		$this->height = $height;
+		return $this;
 	}
 
 
@@ -286,16 +311,21 @@ class FormImages extends FormGroup {
 		$images = empty($this->value) ? [] : explode(';', $this->value);
 		$html .= '<div class="webuploader clearfix">'."\n";
 		$html .= '<div id="'.$fileListId.'" class="uploader-list">'."\n";
+		$width = $this->width + 2;
+		$height = $this->height + 2;
+		$style = " style=\"width:{$width}px;height:{$height}px;\"";
 		foreach ($images as $image) {
-			$html .= '<div class="file-item"><img src="'.$image.'" /><i class="fa fa-close"></i></div>'."\n";
+			$html .= '<div class="file-item"'.$style.'><img src="'.$image.'" /><i class="fa fa-close"></i></div>'."\n";
 		}
 		$html .= '</div>'."\n";
-		$html .= '<div id="'.$filePickerId.'" class="file-upload-btn"><i class="fa fa-plus fa-3x"></i><br />上传图片</div>'."\n";
+		$html .= '<div id="'.$filePickerId.'" class="file-upload-btn"'.$style.'><i class="fa fa-plus fa-3x"></i><span>上传图片</span></div>'."\n";
 		$html .= '</div>'."\n";
 		$html .= <<<EOT
 <script type="text/javascript">
 $('body').ready(function(){
 	var maxCount = {$this->maxCount};
+	var width = {$width};
+	var height = {$height};
 	var uploader = WebUploader.create({
 		auto: true,
 		server: '/attachment/upload',
@@ -325,7 +355,7 @@ $('body').ready(function(){
 	});
 	uploader.on('fileQueued', function( file ) {
 		var li = $(
-				'<div id="' + file.id + '" class="file-item">' +
+				'<div id="' + file.id + '" class="file-item" style="width:'+width+'px;height:'+height+'px;">' +
 					'<img>' +
 					'<i class="fa fa-close"></i>' +
 				'</div>'
@@ -401,6 +431,7 @@ class FormFiles extends FormGroup {
 
 	public $maxCount = 6;
 	public $allowFiles = 'doc,docx,xls,xlsx,ppt,pptx,txt,rar,zip,7z,html,htm,mp3,mov,mp4,avi';
+	public $width = 120;
 
 	public function maxCount($maxCount) {
 		$this->maxCount = $maxCount;
@@ -408,6 +439,11 @@ class FormFiles extends FormGroup {
 
 	public function allowFiles($allowFiles) {
 		$this->allowFiles = $allowFiles;
+	}
+
+	public function width($width) {
+		$this->width = $width;
+		return $this;
 	}
 
 	public function renderInput() {
@@ -418,18 +454,23 @@ class FormFiles extends FormGroup {
 		$files = empty($this->value) ? [] : explode(';', $this->value);
 		$html .= '<div class="webuploader clearfix files-with-name">'."\n";
 		$html .= '<div id="'.$fileListId.'" class="uploader-list">'."\n";
+		$width = $this->width + 2;
+		$height = $this->width + 24 + 2;
+		$style = " style=\"width:{$width}px;height:{$height}px;\"";
 		foreach ($files as $file) {
 			list($key, $name) = explode(',', $file, 2);
 			$ext = substr(strrchr($name, '.'), 1); 
-			$html .= '<div class="file-item"><span class="file-icon file-icon-'.$ext.'"></span><span class="file-name">'.$name.'</span><i class="fa fa-close"></i></div>'."\n";
+			$html .= '<div class="file-item"'.$style.'><div class="file-icon"><span class="file-icon file-icon-'.$ext.'"></span></div><div class="file-name">'.$name.'</div><i class="fa fa-close"></i></div>'."\n";
 		}
 		$html .= '</div>'."\n";
-		$html .= '<div id="'.$filePickerId.'" class="file-upload-btn"><i class="fa fa-plus fa-3x"></i><br />上传文件</div>'."\n";
+		$html .= '<div id="'.$filePickerId.'" class="file-upload-btn"'.$style.'><i class="fa fa-plus fa-3x"></i><span>上传文件</span></div>'."\n";
 		$html .= '</div>'."\n";
 		$html .= <<<EOT
 <script type="text/javascript">
 $('body').ready(function(){
 	var maxCount = {$this->maxCount};
+	var width = {$width};
+	var height = {$height};
 	var uploader = WebUploader.create({
 		auto: true,
 		server: '/attachment/upload?dir=auto',
@@ -459,9 +500,11 @@ $('body').ready(function(){
 	});
 	uploader.on('fileQueued', function( file ) {
 		var li = $(
-				'<div id="' + file.id + '" class="file-item">' +
+				'<div id="' + file.id + '" class="file-item" style="width:'+width+'px;height:'+height+'px;">' +
+					'<div class="file-icon">' +
 					'<span class="file-icon file-icon-' + file.ext + '"></span>' +
-					'<span class="file-name">' + file.name + '</span>' +
+					'</div>' +
+					'<div class="file-name">' + file.name + '</div>' +
 					'<i class="fa fa-close"></i>' +
 				'</div>'
 				),
@@ -526,37 +569,36 @@ class FormFile extends FormFiles {
 	}
 }
 
-class FormValueStyle extends FormGroup {
-	public $classStyle = 'input-xlarge';
+class FormAttrs extends FormGroup {
+	public $inputClasses = ['form-control'];
 	public $styles = [];
 
-	public function mini() {
-		$this->classStyle = 'input-small';
+	public function miniStyle() {
 		return $this;
 	}
 
-	public function small() {
-		$this->classStyle = 'input-small';
+	public function smallStyle() {
 		return $this;
 	}
 
-	public function medium() {
-		$this->classStyle = 'input-medium';
+	public function mediumStyle() {
 		return $this;
 	}
 
-	public function large() {
-		$this->classStyle = 'input-large';
+	public function largeStyle() {
 		return $this;
 	}
 
-	public function xLarge() {
-		$this->classStyle = 'input-xlarge';
+	public function xLargeStyle() {
 		return $this;
 	}
 
-	public function xxLarge() {
-		$this->classStyle = 'input-xxlarge';
+	public function xxLargeStyle() {
+		return $this;
+	}
+
+	public function inputClass($clazz) {
+		$this->inputClasses[] = $clazz;
 		return $this;
 	}
 
@@ -581,13 +623,14 @@ class FormValueStyle extends FormGroup {
 		$this->styles['height'] = $height + 'px';
 		return $this;
 	}
+
 	public function style($name, $value) {
 		$this->styles[$name] = $value;
 		return $this;
 	}
 }
 
-class FormText extends FormValueStyle {
+class FormText extends FormAttrs {
 	public $placeholder = '';
 
 	public function placeholder($placeholder) {
@@ -598,18 +641,61 @@ class FormText extends FormValueStyle {
 	public function renderInput() {
 		$style = $this->getStyle();
 		$readonly = $this->readonly ? ' readonly="readonly"' : '';
-		return "<input id=\"i_{$this->key}\" type=\"text\" name=\"n_{$this->key}\" placeholder=\"{$this->placeholder}\" value=\"{$this->value}\" class=\"{$this->classStyle}\"{$style}{$readonly} /> \n";
+		$classes = implode(' ', $this->inputClasses);
+		return "<input id=\"i_{$this->key}\" type=\"text\" name=\"n_{$this->key}\" placeholder=\"{$this->placeholder}\" value=\"{$this->value}\" class=\"{$classes}\"{$style}{$readonly} /> \n";
 	}
 
+}
 
+class FormDate extends FormAttrs {
+	public $dateFormat = 'yyyy-mm-dd';
+	public $dateStyle = 'date';
 
+	public $options = [
+		'format' => 'yyyy-mm-dd',
+		'autoclose' => 'true'
+	];
+	public function __construct($key='') {
+		$this->key($key);
+		//$this->groupClass('date');
+	}
+
+	public function dateStyle($format='') {
+		$this->options['format'] = $format;
+	}
+
+	public function dateOptions($options) {
+		$this->options = array_merge($this->options, $options);
+	}
+
+	public function autoclose($format='') {
+		$this->dateFormat = $format;
+	}
+
+	public function renderInput() {
+		$this->inputClasses[] = 'datepicker';
+		$style = $this->getStyle();
+		$readonly = $this->readonly ? ' readonly="readonly"' : '';
+		$classes = implode(' ', $this->inputClasses);
+		$html = '<div class="input-group date">'."\n";
+		$html .= "<input id=\"i_{$this->key}\" type=\"text\" name=\"n_{$this->key}\" placeholder=\"{$this->placeholder}\" value=\"{$this->value}\" class=\"{$classes}\"{$style}{$readonly} ";
+		foreach ($this->options as $ok => $ov) {
+			$html .= " data-date-{$ok}=\"{$ov}\"";
+		}
+		$html .= "/> \n";
+		$html .= '<span class="input-group-addon"><i class="fa fa-calendar"></i></span>'."\n";
+		$html .= "</div>\n";
+
+		return $html;
+	}
 }
 
 class FormTextarea extends FormText {
 	public function renderInput() {
 		$style = $this->getStyle();
+		$classes = implode(' ', $this->inputClasses);
 		$readonly = $this->readonly ? ' readonly="readonly"' : '';
-		return "<textarea id=\"i_{$this->key}\" type=\"text\" name=\"n_{$this->key}\" placeholder=\"{$this->placeholder}\"  class=\"{$this->classStyle}\"{$style}{$readonly}>{$this->value}</textarea> \n";
+		return "<textarea id=\"i_{$this->key}\" type=\"text\" name=\"n_{$this->key}\" placeholder=\"{$this->placeholder}\"  class=\"{$classes}\"{$style}{$readonly}>{$this->value}</textarea> \n";
 	}
 }
 
@@ -638,7 +724,7 @@ EOT;
 	}
 }
 
-class FormSelect extends FormValueStyle {
+class FormSelect extends FormAttrs {
 	public $options = [];
 	public function __construct($key='', $options=[]) {
 		$this->key($key);
@@ -673,7 +759,8 @@ class FormSelect extends FormValueStyle {
 	public function renderInput() {
 		$style = $this->getStyle();
 		$readonly = $this->readonly ? ' readonly="readonly"' : '';
-		$html = "<select id=\"i_{$this->key}\" name=\"n_{$this->key}\" class=\"{$this->classStyle}\"{$style}{$readonly}> \n";
+		$classes = implode(' ', $this->inputClasses);
+		$html = "<select id=\"i_{$this->key}\" name=\"n_{$this->key}\" class=\"{$classes}\"{$style}{$readonly}> \n";
 		foreach ($this->options as $option) {
 			$selected = $this->value == $option['value'] ? ' selected="selected"' : '';
 			$html .= "<option value=\"{$option['value']}\"{$selected}>{$option['name']}</option>\n";

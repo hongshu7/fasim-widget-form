@@ -176,10 +176,11 @@ class FormBuilder {
 		foreach ($controls as $control) {
 			$html .= $control->render();
 		}
-		$html .= "</div> \n";
+		
 		foreach ($buttons as $control) {
 			$html .= $control->render();
 		}
+		$html .= "</div> \n";
 		$html .= "</form> \n";
 
 		foreach ($keys as $key) {
@@ -187,7 +188,6 @@ class FormBuilder {
 				$nkey = str_replace('.', '_-_', $key);
 				$html = str_replace('_'.$key.'"', '_'.$nkey.'"', $html);
 			}
-			
 		}
 		return $html;
 	}
@@ -251,6 +251,10 @@ class FormBuilder {
 
 	public static function newFile($key='') {
 		return new FormFile($key);
+	}
+
+	public static function newDate($key='') {
+		return new FormDate($key);
 	}
 
 	public static function newFiles($key='') {
