@@ -328,10 +328,11 @@ $('body').ready(function(){
 	var height = {$height};
 	var uploader = WebUploader.create({
 		auto: true,
+		duplicate: true,
 		server: '/attachment/upload',
 		pick: '#{$filePickerId}',
 		accept: {
-			title: '上传文件',
+			title: '上传图片',
 			extensions: '{$this->allowFiles}',
 			mimeTypes: 'image/*'
 		}
@@ -364,7 +365,7 @@ $('body').ready(function(){
 		$('#{$fileListId}').append(li);
 		checkCount();
 		li.find('i').click(function(){
-			removeItem(this);
+			uploader.cancelFile( file );
 		});
 		uploader.makeThumb(file, function( error, src ) {
 			if ( error ) {
@@ -373,6 +374,10 @@ $('body').ready(function(){
 			}
 			img.attr( 'src', src );
 		}, 160, 160 );
+	});
+	uploader.on('fileDequeued', function( file ) {
+		var obj = $('#' + file.id + ' i');
+		removeItem(obj);
 	});
 	uploader.on('uploadProgress', function( file, percentage ) {
 		var li = $( '#'+file.id ), percentDiv = li.find('.progress span');
@@ -412,6 +417,19 @@ $('body').ready(function(){
 	});
 	uploader.on('uploadComplete', function( file ) {
 		$( '#'+file.id ).find('.progress').remove();
+	});
+	uploader.on('error', function( type ) {
+		if (type == 'Q_EXCEED_NUM_LIMIT') {
+			alert('所选的文件数量超过限制');
+		} else if (type == 'Q_EXCEED_SIZE_LIMIT') {
+			alert('所选的文件大小超过限制');
+		} else if (type == 'Q_TYPE_DENIED') {
+			alert('所选的文件类型不允许上传');
+		} else if (type == 'F_DUPLICATE') {
+			alert('重复文件');
+		} else {
+			alert('未知错误:' + type);
+		}
 	});
 });
 </script>
@@ -473,6 +491,7 @@ $('body').ready(function(){
 	var height = {$height};
 	var uploader = WebUploader.create({
 		auto: true,
+		duplicate: true,
 		server: '/attachment/upload?dir=auto',
 		pick: '#{$filePickerId}',
 		accept: {
@@ -512,8 +531,12 @@ $('body').ready(function(){
 		$('#{$fileListId}').append(li);
 		checkCount();
 		li.find('i').click(function(){
-			removeItem(this);
+			uploader.cancelFile(file);
 		});
+	});
+	uploader.on('fileDequeued', function( file ) {
+		var obj = $('#' + file.id + ' i');
+		removeItem(obj);
 	});
 	uploader.on('uploadProgress', function( file, percentage ) {
 		var li = $( '#'+file.id ), percentDiv = li.find('.progress span');
@@ -554,6 +577,19 @@ $('body').ready(function(){
 	});
 	uploader.on('uploadComplete', function( file ) {
 		$( '#'+file.id ).find('.progress').remove();
+	});
+	uploader.on('error', function( type ) {
+		if (type == 'Q_EXCEED_NUM_LIMIT') {
+			alert('所选的文件数量超过限制');
+		} else if (type == 'Q_EXCEED_SIZE_LIMIT') {
+			alert('所选的文件大小超过限制');
+		} else if (type == 'Q_TYPE_DENIED') {
+			alert('所选的文件类型不允许上传');
+		} else if (type == 'F_DUPLICATE') {
+			alert('重复文件');
+		} else {
+			alert('未知错误:' + type);
+		}
 	});
 });
 </script>
