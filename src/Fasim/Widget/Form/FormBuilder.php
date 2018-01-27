@@ -21,7 +21,9 @@ class FormBuilder {
 	public function __construct() {
 		$this->baseUrl = Config::baseUrl();
 		$this->imageUrl = Config::get('url.cdn');
-
+		if ($this->imageUrl == '' || substr($this->imageUrl, -1) != '/') {
+			$this->imageUrl .= '/';
+		}
 		if (self::$instance == null) {
 			self::$instance = $this;
 		}
@@ -34,6 +36,9 @@ class FormBuilder {
 
 	public function setImageUrl($url) {
 		$this->imageUrl = $url;
+		if ($this->imageUrl == '' || substr($this->imageUrl, -1) != '/') {
+			$this->imageUrl .= '/';
+		}
 		return $this;
 	}
 
@@ -192,29 +197,6 @@ class FormBuilder {
 		return $html;
 	}
 
-	public static function getUrl($url) {
-		if ($url{0} != '#' && (strlen($url) < 4 || substr($url, 0, 4) != 'http')) {
-			if ($url{0} == '/') {
-				$url = substr($url, 0, 1);
-			}
-			$url = self::$instance->baseUrl.$url;
-		}
-		return $url;
-	}
-
-	public static function getImageUrl($url, $format='') {
-		if (strlen($url) < 4 || substr($url, 0, 4) != 'http') {
-			if ($url{0} == '/') {
-				$url = substr($url, 0, 1);
-			}
-			$url = self::$instance->imageUrl.$url;
-		}
-		if ($format != '') {
-			$url .= '-'.$format.'.jpg';
-		}
-		return $url;
-	}
-
 	public function add($control) {
 		$this->controls[] = $control;
 		return $this;
@@ -279,6 +261,29 @@ class FormBuilder {
 
 	public static function newScript($html='') {
 		return new FormScript($html);
+	}
+
+	public static function getUrl($url) {
+		if ($url{0} != '#' && (strlen($url) < 4 || substr($url, 0, 4) != 'http')) {
+			if ($url{0} == '/') {
+				$url = substr($url, 1);
+			}
+			$url = self::$instance->baseUrl.$url;
+		}
+		return $url;
+	}
+
+	public static function getImageUrl($url, $format='') {
+		if (strlen($url) < 4 || substr($url, 0, 4) != 'http') {
+			if ($url{0} == '/') {
+				$url = substr($url, 1);
+			}
+			$url = self::$instance->imageUrl.$url;
+		}
+		if ($format != '') {
+			$url .= '-'.$format.'.jpg';
+		}
+		return $url;
 	}
 
 }
