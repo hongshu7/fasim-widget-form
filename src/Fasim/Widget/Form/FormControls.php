@@ -286,7 +286,12 @@ abstract class FormUpload extends FormGroup {
 	public $title = '';
 	public $mimeTypes = '';
 	public $valueType = 'json';  //json or url
-	public $uploadUrl = '/attachment/upload?dir=auto';
+	public $uploadUrl = '';
+
+	public function __construct($key='') {
+		$this->key($key);
+		$this->uploadUrl('/attachment/upload?dir=auto');
+	}
 
 	public function maxCount($maxCount) {
 		$this->maxCount = $maxCount;
@@ -314,7 +319,7 @@ abstract class FormUpload extends FormGroup {
 	}
 
 	public function uploadUrl($uploadUrl) {
-		$this->uploadUrl = $uploadUrl;
+		$this->uploadUrl = FormBuilder::getUrl($uploadUrl);
 		return $this;
 	}
 
@@ -364,7 +369,8 @@ abstract class FormUpload extends FormGroup {
 		foreach ($files as $file) {
 			$ext = substr(strrchr($file['url'], '.'), 1); 
 			if ($isImage) {
-				$html .= '<div class="file-item"'.$style.'><img src="'.$file['url'].'" /><i class="fa fa-close"></i></div>'."\n";
+				$url = FormBuilder::getImageUrl($file['url']);
+				$html .= '<div class="file-item"'.$style.'><img src="'.$url.'" /><i class="fa fa-close"></i></div>'."\n";
 			} else {
 				$html .= '<div class="file-item"'.$style.'><div class="file-icon"><span class="file-icon file-icon-'.$ext.'"></span></div><div class="file-name">'.$file['name'].'</div><i class="fa fa-close"></i></div>'."\n";
 			}
@@ -539,7 +545,7 @@ EOT;
 class FormImages extends FormUpload {
 
 	public function __construct($key='') {
-		$this->key($key);
+		parent::__construct($key);
 		$this->title = '上传图片';
 		$this->mimeTypes = 'image/*';
 		$this->allowFiles = 'jpg,jpeg,png,gif';
@@ -555,7 +561,7 @@ class FormImage extends FormImages {
 
 class FormFiles extends FormUpload {
 	public function __construct($key='') {
-		$this->key($key);
+		parent::__construct($key);
 		$this->title = '上传文件';
 		$this->allowFiles = 'doc,docx,xls,xlsx,ppt,pptx,txt,rar,zip,7z,html,htm,mp3,mov,mp4,avi';
 		$this->width(120);
