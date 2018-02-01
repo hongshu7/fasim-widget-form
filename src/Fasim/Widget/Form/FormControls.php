@@ -631,12 +631,12 @@ class FormAttrs extends FormGroup {
 	}
 
 	public function width($width) {
-		$this->styles['width'] = $width + 'px';
+		$this->styles['width'] = $width . 'px';
 		return $this;
 	}
 
 	public function height($height) {
-		$this->styles['height'] = $height + 'px';
+		$this->styles['height'] = $height . 'px';
 		return $this;
 	}
 
@@ -663,7 +663,7 @@ class FormText extends FormAttrs {
 
 }
 
-class FormDate extends FormAttrs {
+class FormDate extends FormText {
 	public $dateFormat = 'yyyy-mm-dd';
 	public $dateStyle = 'date';
 
@@ -769,7 +769,7 @@ EOT;
 	}
 }
 
-class FormSelect extends FormAttrs {
+class FormSelect extends FormText {
 	public $options = [];
 	public function __construct($key='', $options=[]) {
 		$this->key($key);
@@ -806,6 +806,9 @@ class FormSelect extends FormAttrs {
 		$readonly = $this->readonly ? ' readonly="readonly"' : '';
 		$classes = implode(' ', $this->inputClasses);
 		$html = "<select id=\"i_{$this->key}\" name=\"n_{$this->key}\" class=\"{$classes}\"{$style}{$readonly}> \n";
+		if ($this->placeholder != '') {
+			$html .= "<option value=\"\">{$this->placeholder}</option>\n";
+		}
 		foreach ($this->options as $option) {
 			$selected = $this->value == $option['value'] ? ' selected="selected"' : '';
 			$html .= "<option value=\"{$option['value']}\"{$selected}>{$option['name']}</option>\n";
