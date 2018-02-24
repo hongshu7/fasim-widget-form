@@ -223,6 +223,10 @@ class FormBuilder {
 		return new FormSelect($key, $options);
 	}
 
+	public static function newCheckbox($key='', $options=[]) {
+		return new FormCheckbox($key, $options);
+	}
+
 	public static function newImage($key='') {
 		return new FormImage($key);
 	}
