@@ -818,7 +818,7 @@ class FormSelect extends FormText {
 	}
 }
 
-class FormCheckbox extends FormText {
+class FormCheckbox extends FormGroup {
 	public $options = [];
 	public function __construct($key='', $options=[]) {
 		$this->key($key);
@@ -851,19 +851,73 @@ class FormCheckbox extends FormText {
 	}
 
 	public function renderInput() {
-		$style = $this->getStyle();
 		$readonly = $this->readonly ? ' readonly="readonly"' : '';
-		$classes = implode(' ', $this->inputClasses);
-		$html = "<br/>";
 
+		$i = 0;
+		$html = "<div class=\"checkbox\">";
 		foreach ($this->options as $option) {
+			$i++;
 			$checked = '';
 			// var_dump($this->value);exit();
 			if (!empty($this->value)) {
 				$checked = in_array($option['value'], $this->value) ? ' checked="checked"' : '';
 			} 
-			$html .= " <input type='checkbox' name='n_shops[]' value=\"{$option['value']}\"{$checked}>{$option['name']}</option>\n";
+			$html .= "<label><input type=\"checkbox\" id=\"i_{$this->key}_{$i}\" name=\"n_{$this->key}[]\" value=\"{$option['value']}\"{$checked}{$readonly} /> {$option['name']}</label>\n";
+			
 		}
+		$html .= "</div>\n";
+		return $html;
+	}
+}
+
+class FormRadio extends FormGroup {
+	public $options = [];
+	public function __construct($key='', $options=[]) {
+		$this->key($key);
+		$this->options($options);
+	}
+
+	public function options($options) {
+		if (is_array($options)) {
+			foreach ($options as $ok => $ov) {
+				if (is_array($ov) && isset($ov['value'])) {
+					//fixed
+					if (isset($ov['key'])) {
+						$ov['name'] = $ov['key'];
+					}
+					if (isset($ov['name'])) {
+						$this->options[] = [
+							'name' => $ov['name'],
+							'value' => $ov['value']
+						];
+					}
+				} else if (is_string($ov)) {
+					$this->options[] = [
+						'name' => $ov,
+						'value' => $ok.''
+					];
+				}
+			}
+		}
+		return $this;
+	}
+
+	public function renderInput() {
+		$readonly = $this->readonly ? ' readonly="readonly"' : '';
+
+		$i = 0;
+		$html .= "<div class=\"checkbox\">";
+		foreach ($this->options as $option) {
+			$i++;
+			$checked = '';
+			// var_dump($this->value);exit();
+			if (!empty($this->value)) {
+				$checked = in_array($option['value'], $this->value) ? ' checked="checked"' : '';
+			} 
+			$html .= "<label><input type=\"checkbox\" id=\"i_{$this->key}_{$i}\" name=\"n_{$this->key}[]\" value=\"{$option['value']}\"{$checked}{$readonly} /> {$option['name']}</label>\n";
+			
+		}
+		$html .= "</div>\n";
 		return $html;
 	}
 }

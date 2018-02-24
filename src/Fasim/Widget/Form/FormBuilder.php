@@ -227,6 +227,10 @@ class FormBuilder {
 		return new FormCheckbox($key, $options);
 	}
 
+	public static function newRadio($key='', $options=[]) {
+		return new FormRadio($key, $options);
+	}
+
 	public static function newImage($key='') {
 		return new FormImage($key);
 	}
