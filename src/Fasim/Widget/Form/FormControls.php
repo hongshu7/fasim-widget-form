@@ -758,8 +758,9 @@ class FormRichText extends FormTextarea {
 		$style = $this->getStyle();
 		$classes = implode(' ', $this->inputClasses);
 		$baseurl = FormBuilder::getUrl('');
-		$html = "<script id=\"i_{$this->key}\" name=\"n_{$this->key}\" type=\"text/plain\"{$classes}{$style}>{$this->value}</script>";
+		$html = "";
 		if ($this->editorType == 'kind' || $this->editorType == 'kindeditor') {
+			$html = parent::renderInput();
 			$html .= <<<EOT
 <script type="text/javascript">
 var editor_{$this->key};
@@ -782,6 +783,7 @@ EOT;
 		} else {
 
 			$html .= <<<EOT
+<script id=\"i_{$this->key}\" name=\"n_{$this->key}\" type=\"text/plain\"{$classes}{$style}></script>
 <script type="text/javascript">
 //var UEDITOR_HOME_URL = '{$baseurl}';
 var UEDITOR_SERVER_URL = '{$this->uploadUrl}';
