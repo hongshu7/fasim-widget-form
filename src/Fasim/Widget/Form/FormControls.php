@@ -719,12 +719,23 @@ class FormTextarea extends FormText {
 }
 
 class FormRichText extends FormTextarea {
+	public $editorType = 'baidu';
 	public $uploadUrl = '';
 	public $fileManagerUrl = '';
 	function __construct($key) {
 		$this->key($key);
-		$this->uploadUrl('attachment/upload?ke=1');
+		$this->editorType('baidu');
 		$this->fileManagerUrl('attachment/file_manager');
+	}
+
+	public function editorType($editorType='') {
+		$this->editorType = $editorType;
+		if ($editorType == 'kind' || $editorType == 'kindeditor') {
+			$this->uploadUrl('attachment/upload?ke=1');
+		} else {
+			$this->uploadUrl('attachment/baidu');
+		}
+		return $this;
 	}
 
 	public function uploadUrl($uploadUrl='') {
@@ -744,9 +755,12 @@ class FormRichText extends FormTextarea {
 		if (!isset($this->styles['height'])) {
 			$this->style('height', '500px');
 		}
+		$style = $this->getStyle();
+		$classes = implode(' ', $this->inputClasses);
 		$baseurl = FormBuilder::getUrl('');
-		$html = parent::renderInput();
-		$html .= <<<EOT
+		$html = "<script id=\"i_{$this->key}\" name=\"n_{$this->key}\" type=\"text/plain\"{$classes}{$style}></script>";
+		if ($this->editorType == 'kind' || $this->editorType == 'kindeditor') {
+			$html .= <<<EOT
 <script type="text/javascript">
 var editor_{$this->key};
 $('body').ready(function() {
@@ -765,6 +779,18 @@ $('body').ready(function() {
 });
 </script>
 EOT;
+		} else {
+
+			$html .= <<<EOT
+<script type="text/javascript">
+//var UEDITOR_HOME_URL = '{$baseurl}';
+var UEDITOR_SERVER_URL = '{$this->uploadUrl}';
+$('body').ready(function() {
+	var um = UE.getEditor('i_{$this->key}');
+});
+</script>
+EOT;
+		}
 		return $html;
 	}
 }
